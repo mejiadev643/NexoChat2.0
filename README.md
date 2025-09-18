@@ -10,7 +10,7 @@
 
 1. **Clona el repositorio:**
     ```bash
-    git clone https://github.com/mejiadev643/NexoChat.git
+    git clone https://github.com/mejiadev643/NexoChat2.0
     cd NexoChat
     ```
 
