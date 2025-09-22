@@ -20,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Middleware para API que incluye Sanctum
         $middleware->api(prepend: [
             //EnsureFrontendRequestsAreStateful::class,
+            \Illuminate\Http\Middleware\HandleCors::class,
             \Illuminate\Routing\Middleware\ThrottleRequests::with(60, 1), // CORREGIDO: sin array
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
         ]);

@@ -4,10 +4,15 @@ use App\Http\Controllers\AuthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ChatController;
+use Illuminate\Support\Facades\Broadcast;
 
 // Rutas públicas
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
+use App\Http\Controllers\BroadcastAuthController;
+
+Route::post('/broadcasting/auth', [BroadcastAuthController::class, 'authenticate'])
+    ->middleware('auth:sanctum');
 
 // Rutas protegidas
 Route::middleware('auth:sanctum')->group(function () {
@@ -28,4 +33,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/messages/{messageId}', [ChatController::class, 'deleteMessage']);
     //prueba de vida
     Route::get('/ping', [AuthController::class, 'ping']);//validate token
+
+
 });

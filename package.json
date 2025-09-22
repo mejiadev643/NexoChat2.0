@@ -1,0 +1,6 @@
+{
+  "private": true,
+  "scripts": {
+    "no-assets": "echo 'This Laravel is API-only'"
+  }
+}

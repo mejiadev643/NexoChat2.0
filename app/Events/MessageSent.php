@@ -2,38 +2,32 @@
 
 namespace App\Events;
 
+use App\Models\Message;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class MessageSent
+class MessageSent implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public $message;
-    /**
-     * Create a new event instance.
-     */
-    public function __construct($message)
-    {
-        $this->message = $message->load('user');
 
-        // Notificar a todos los participantes excepto al remitente
-        $conversation = $message->conversation;
-        foreach ($conversation->participants as $participant) {
-            if ($participant->id !== $message->user_id) {
-                // Disparar notificación individual para cada usuario
-                event(new NewMessageNotification($message, $participant->id));
-            }
-        }
+    public function __construct(Message $message)
+    {
+        $this->message = $message->load('user', 'conversation');
+
+        // ✅ LOG para verificar que el evento se dispara
+        \Log::info('🚀 Evento MessageSent disparado', [
+            'message_id' => $message->id,
+            'conversation_id' => $message->conversation_id,
+            'user_id' => $message->user_id,
+            'channel' => 'conversation.' . $message->conversation_id
+        ]);
     }
 
-    /**
-     * Get the channels the event should broadcast on.
-     *
-     * @return array<int, \Illuminate\Broadcasting\Channel>
-     */
     public function broadcastOn(): Channel
     {
         return new Channel('conversation.' . $this->message->conversation_id);
@@ -48,6 +42,7 @@ class MessageSent
     {
         return [
             'message' => $this->message->toArray(),
+            'debug' => 'Evento recibido correctamente'
         ];
     }
 }
