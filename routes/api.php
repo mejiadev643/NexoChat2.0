@@ -26,4 +26,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/conversations/{conversationId}/messages', [ChatController::class, 'messages']);
     Route::post('/conversations/{conversationId}/messages', [ChatController::class, 'sendMessage']);
     Route::delete('/messages/{messageId}', [ChatController::class, 'deleteMessage']);
+    //prueba de vida
+    Route::get('/ping', [AuthController::class, 'ping']);//validate token
 });

@@ -118,4 +118,8 @@ class AuthController extends Controller
             'user' => $user->fresh()
         ]);
     }
+    public function ping()
+    {
+        return response()->json(['message' => 'pong'], 200);
+    }
 }

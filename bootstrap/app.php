@@ -19,7 +19,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         // Middleware para API que incluye Sanctum
         $middleware->api(prepend: [
-            EnsureFrontendRequestsAreStateful::class,
+            //EnsureFrontendRequestsAreStateful::class,
             \Illuminate\Routing\Middleware\ThrottleRequests::with(60, 1), // CORREGIDO: sin array
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
         ]);
