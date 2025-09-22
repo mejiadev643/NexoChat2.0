@@ -51,6 +51,12 @@
     php artisan reverb:start
     ```
 
+## Laravel queue
+
+8. **Levantar la cola de laravel para procesar los mensajes
+    ```bash
+    php artisan queue:work
+    ```
 ---
 
 ¡Listo! Accede a tu proyecto en [http://localhost:8000](http://localhost:8000).
