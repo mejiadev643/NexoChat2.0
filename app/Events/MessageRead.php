@@ -5,11 +5,13 @@ namespace App\Events;
 use App\Models\Conversation;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
+use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class MessageRead implements ShouldBroadcast
+class MessageRead implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
@@ -24,7 +26,7 @@ class MessageRead implements ShouldBroadcast
 
     public function broadcastOn(): Channel
     {
-        return new Channel('conversation.' . $this->conversationId);
+        return new PrivateChannel('conversation.' . $this->conversationId);
     }
 
     public function broadcastAs(): string

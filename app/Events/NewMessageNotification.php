@@ -5,11 +5,13 @@ namespace App\Events;
 use App\Models\Message;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
+use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class NewMessageNotification implements ShouldBroadcast
+class NewMessageNotification implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
@@ -25,7 +27,7 @@ class NewMessageNotification implements ShouldBroadcast
     public function broadcastOn(): Channel
     {
         // Canal privado para el usuario específico
-        return new Channel('user.' . $this->recipientId);
+        return new PrivateChannel('user.' . $this->recipientId);
     }
 
     public function broadcastAs(): string
