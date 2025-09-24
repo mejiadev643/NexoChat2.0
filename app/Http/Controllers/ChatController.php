@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Events\MessageRead;
 use App\Events\MessageSent;
+use App\Events\NewMessageNotification;
 use App\Models\Conversation;
 use App\Models\Message;
 use App\Models\User;
@@ -68,8 +69,11 @@ class ChatController extends Controller
             })
             // ->whereDoesntHave('deletedByUsers') //si se quiere dejar de ver los mensajes eliminados por el usuario
             ->orderBy('created_at', 'asc')
+            //limitar a los ultimos 50 mensajes
+            //->take(50)
             ->get();
-
+        //take last 50 messages
+        $messages = $messages->slice(-50)->values();
         return response()->json($messages);
     }
 
@@ -100,6 +104,13 @@ class ChatController extends Controller
         ]);
 
         event(new MessageSent($message));
+
+        // Eventos de notificación para cada usuario (excepto el remitente)
+        foreach ($conversation->participants as $participant) {
+            if ($participant->id !== auth()->id()) {
+                broadcast(new NewMessageNotification($message, $participant->id));
+            }
+        }
 
         // Verificar que el evento se disparó
         Log::info('Evento MessageSent disparado para mensaje: ' . $message->id);
@@ -140,15 +151,39 @@ class ChatController extends Controller
         DB::beginTransaction();
 
         try {
-            $conversation = Conversation::create([
-                'name' => $request->name,
-                'is_group' => $request->is_group ?? false,
-                'created_by' => $user->id
-            ]);
-
-            // Agregar participantes
-            $participants = array_unique(array_merge([$user->id], $userIds));
-            $conversation->participants()->attach($participants);
+            //verificar si es grupo y tiene nombre, revisar si tiene miembros y solo actualizar los miembros
+            if ($request->is_group && $request->name) {
+                //verificar el grupo con el mismo nombre, revisar si tiene miembros y solo actualizar los miembros
+                $existingGroup = Conversation::where('name', $request->name)
+                    ->where('is_group', true)
+                    ->first();
+                if ($existingGroup) {
+                    //agregar miembros si no están ya en el grupo
+                    $existingMembers = $existingGroup->participants->pluck('id')->toArray();
+                    $newMembers = array_diff($userIds, $existingMembers);
+                    if (!empty($newMembers)) {
+                        $existingGroup->participants()->attach($newMembers);
+                    }
+                    DB::commit();
+                    return response()->json($existingGroup->load('participants'));
+                }
+                //crear nuevo grupo
+                $conversation = Conversation::create([
+                    'name' => $request->name,
+                    'is_group' => true,
+                    'created_by' => $user->id
+                ]);
+            } elseif ($request->is_group && !$request->name) {
+                return response()->json(['error' => 'Group conversations require a name'], 422);
+            } elseif (!$request->is_group && count($userIds) === 1) {
+                $conversation = Conversation::create([
+                    'is_group' => false,
+                    'created_by' => $user->id
+                ]);
+                $conversation->participants()->attach($user->id);
+            } else {
+                return response()->json(['error' => 'Invalid conversation parameters'], 422);
+            }
 
             DB::commit();
 
